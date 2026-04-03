@@ -174,7 +174,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   .draw-toolbar{padding:6px 8px;gap:6px;}
 }
 @media(max-width:500px){
-  .panels{flex-direction:column;}
+  .panels{display:contents;}
+  .panels .panel:first-child{order:1;}
+  .draw-toolbar{order:2;}
+  .panels .panel:last-child{order:3;}
+  .work-area{overflow:auto;}
 }
 @media(min-width:1000px){
   .brush-info{width:185px;padding:12px;}
