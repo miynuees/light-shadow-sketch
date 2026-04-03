@@ -16,7 +16,10 @@ body{background:#1a1a2e;display:flex;flex-direction:column;}
 .header-center{text-align:center;}
 .header h1{font-size:15px;font-weight:700;background:linear-gradient(90deg,#e8d0ff,#ffd6e8,#ffe8c8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .header-desc{font-size:10px;color:rgba(200,190,220,0.7);font-weight:500;margin-top:1px;}
-.btn-reset{position:absolute;right:14px;top:50%;transform:translateY(-50%);padding:6px 14px;border:none;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.15);}
+.header-btns{position:absolute;right:14px;top:50%;transform:translateY(-50%);display:flex;gap:6px;}
+.btn-save{padding:6px 14px;border:none;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;background:rgba(160,200,255,0.25);color:rgba(200,220,255,0.9);border:1px solid rgba(160,200,255,0.3);}
+.btn-save:active{background:rgba(160,200,255,0.4);}
+.btn-reset{padding:6px 14px;border:none;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.15);}
 .btn-reset:active{background:rgba(255,255,255,0.2);}
 
 /* ── Stars (decorative) ── */
@@ -187,7 +190,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <h1>빛과 그림자 아이디어 스케치</h1>
     <div class="header-desc">우리 사회의 빛과 그림자를 탐색하고, 다양한 재료로 표현해봅시다.</div>
   </div>
-  <button class="btn-reset" id="btnReset">초기화</button>
+  <div class="header-btns">
+    <button class="btn-save" id="btnSave">이미지 저장</button>
+    <button class="btn-reset" id="btnReset">초기화</button>
+  </div>
 </div>
 
 <div class="main-area">
@@ -344,6 +350,7 @@ function init() {
   document.getElementById('btnUndo').addEventListener('click', undo);
   document.getElementById('btnClear').addEventListener('click', clearAll);
   document.getElementById('btnReset').addEventListener('click', clearAll);
+  document.getElementById('btnSave').addEventListener('click', saveImage);
   document.getElementById('btnAddSpot').addEventListener('click', addSpotlight);
   document.getElementById('btnDelSpot').addEventListener('click', deleteSelectedSpot);
   document.getElementById('spotSizeSlider').addEventListener('input', onSpotSizeChange);
@@ -822,6 +829,74 @@ function hasDrawing(){
 // ═══════════════════════════════════════
 // Util
 // ═══════════════════════════════════════
+// ═══════════════════════════════════════
+// Save image
+// ═══════════════════════════════════════
+function saveImage(){
+  // Combine both canvases side by side
+  const pad=20, gap=16, labelH=22;
+  const totalW=boxW+hanjiW+gap+pad*2;
+  const totalH=Math.max(boxH,hanjiH)+pad*2+labelH;
+  const c=document.createElement('canvas');
+  c.width=totalW; c.height=totalH;
+  const ctx=c.getContext('2d');
+
+  // Background
+  ctx.fillStyle='#1a1a2e';
+  ctx.fillRect(0,0,totalW,totalH);
+
+  // Labels
+  ctx.fillStyle='rgba(200,190,230,0.8)';
+  ctx.font='bold 12px "Noto Sans KR",sans-serif';
+  ctx.textAlign='center';
+  ctx.fillText('박스 안 (정면)',pad+boxW/2, pad+14);
+  ctx.fillText('한지 화면',pad+boxW+gap+hanjiW/2, pad+14);
+
+  // Draw box canvas
+  ctx.drawImage(drawCanvas, pad, pad+labelH, boxW, boxH);
+  // Border
+  ctx.strokeStyle='rgba(255,255,255,0.2)';
+  ctx.lineWidth=2;
+  ctx.strokeRect(pad,pad+labelH,boxW,boxH);
+
+  // Draw hanji: first background, then spotlights as colored circles, then shadow canvas
+  const hx=pad+boxW+gap, hy=pad+labelH;
+  // Hanji paper base
+  ctx.fillStyle='#e8e0d0';
+  ctx.fillRect(hx,hy,hanjiW,hanjiH);
+
+  // Spotlights
+  spots.forEach(s=>{
+    const sc=SPOT_COLORS[s.colorIdx];
+    const baseSize=Math.min(hanjiW,hanjiH);
+    const glowR=baseSize*(s.size/100)/2;
+    const sx=hx+s.x*hanjiW, sy=hy+s.y*hanjiH;
+    const grad=ctx.createRadialGradient(sx,sy,0,sx,sy,glowR);
+    grad.addColorStop(0,`rgba(${sc.rgba},0.5)`);
+    grad.addColorStop(0.35,`rgba(${sc.rgba},0.15)`);
+    grad.addColorStop(1,'transparent');
+    ctx.fillStyle=grad;
+    ctx.fillRect(hx,hy,hanjiW,hanjiH);
+  });
+
+  // Shadow canvas with blur
+  ctx.filter=`blur(${blurAmount}px)`;
+  ctx.globalAlpha=0.55;
+  ctx.drawImage(hanjiDrawCanvas, hx, hy, hanjiW, hanjiH);
+  ctx.filter='none';
+  ctx.globalAlpha=1;
+
+  // Border
+  ctx.strokeStyle='rgba(255,255,255,0.2)';
+  ctx.strokeRect(hx,hy,hanjiW,hanjiH);
+
+  // Download
+  const link=document.createElement('a');
+  link.download='빛과그림자_스케치.png';
+  link.href=c.toDataURL('image/png');
+  link.click();
+}
+
 function hexToRgba(hex,alpha){
   if(hex.startsWith('rgb')){const m=hex.match(/[\d.]+/g);if(m&&m.length>=3)return`rgba(${m[0]},${m[1]},${m[2]},${alpha})`;}
   hex=hex.replace('#','');
