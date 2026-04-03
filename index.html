@@ -842,20 +842,22 @@ function saveImage(){
   const ctx=c.getContext('2d');
 
   // Background
-  ctx.fillStyle='#1a1a2e';
+  ctx.fillStyle='#ffffff';
   ctx.fillRect(0,0,totalW,totalH);
 
   // Labels
-  ctx.fillStyle='rgba(200,190,230,0.8)';
+  ctx.fillStyle='#555';
   ctx.font='bold 12px "Noto Sans KR",sans-serif';
   ctx.textAlign='center';
   ctx.fillText('박스 안 (정면)',pad+boxW/2, pad+14);
   ctx.fillText('한지 화면',pad+boxW+gap+hanjiW/2, pad+14);
 
-  // Draw box canvas
+  // Draw box canvas - white background first
+  ctx.fillStyle='#f5f0e8';
+  ctx.fillRect(pad,pad+labelH,boxW,boxH);
   ctx.drawImage(drawCanvas, pad, pad+labelH, boxW, boxH);
   // Border
-  ctx.strokeStyle='rgba(255,255,255,0.2)';
+  ctx.strokeStyle='#ccc';
   ctx.lineWidth=2;
   ctx.strokeRect(pad,pad+labelH,boxW,boxH);
 
@@ -887,7 +889,7 @@ function saveImage(){
   ctx.globalAlpha=1;
 
   // Border
-  ctx.strokeStyle='rgba(255,255,255,0.2)';
+  ctx.strokeStyle='#ccc';
   ctx.strokeRect(hx,hy,hanjiW,hanjiH);
 
   // Download
