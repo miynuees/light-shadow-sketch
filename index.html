@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>빛과 그림자 - 아이디어 스케치</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;touch-action:none;font-family:'Noto Sans KR','Segoe UI',sans-serif;}
+body{background:#1a1a2e;display:flex;flex-direction:column;}
+
+/* ── Header ── */
+.header{background:linear-gradient(135deg,#2a1f4e,#3b2d6b);color:#fff;padding:7px 18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:100;border-bottom:1px solid rgba(255,255,255,0.08);position:relative;}
+.header-center{text-align:center;}
+.header h1{font-size:15px;font-weight:700;background:linear-gradient(90deg,#e8d0ff,#ffd6e8,#ffe8c8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.header-desc{font-size:10px;color:rgba(200,190,220,0.7);font-weight:500;margin-top:1px;}
+.btn-reset{position:absolute;right:14px;top:50%;transform:translateY(-50%);padding:6px 14px;border:none;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.15);}
+.btn-reset:active{background:rgba(255,255,255,0.2);}
+
+/* ── Stars (decorative) ── */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%,rgba(255,255,255,0.4),transparent),
+    radial-gradient(1px 1px at 30% 65%,rgba(255,255,255,0.3),transparent),
+    radial-gradient(1.5px 1.5px at 55% 15%,rgba(255,255,255,0.5),transparent),
+    radial-gradient(1px 1px at 70% 45%,rgba(255,255,255,0.3),transparent),
+    radial-gradient(1px 1px at 85% 75%,rgba(255,255,255,0.4),transparent),
+    radial-gradient(1.5px 1.5px at 15% 80%,rgba(255,255,255,0.35),transparent),
+    radial-gradient(1px 1px at 45% 90%,rgba(255,255,255,0.3),transparent),
+    radial-gradient(1px 1px at 92% 25%,rgba(255,255,255,0.4),transparent),
+    radial-gradient(1.5px 1.5px at 60% 55%,rgba(255,255,255,0.25),transparent),
+    radial-gradient(1px 1px at 25% 40%,rgba(255,255,255,0.3),transparent);}
+
+/* ── Main layout ── */
+.main-area{flex:1;display:flex;gap:8px;padding:8px 10px;overflow:hidden;min-height:0;position:relative;z-index:1;}
+
+/* ── Brush info sidebar ── */
+.brush-info{width:170px;flex-shrink:0;background:rgba(30,25,55,0.85);border-radius:16px;box-shadow:0 2px 16px rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);padding:12px 12px 8px;overflow-y:auto;backdrop-filter:blur(8px);}
+.brush-info::-webkit-scrollbar{display:none;}
+.brush-info-title{font-size:12px;font-weight:700;color:#d4b8ff;text-align:center;padding-bottom:8px;margin-bottom:4px;border-bottom:1.5px dashed rgba(255,255,255,0.12);letter-spacing:0.5px;}
+.bi-item{padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06);}
+.bi-item:last-child{border-bottom:none;}
+.bi-name{font-size:12px;font-weight:700;color:#f0e8ff;margin-bottom:3px;}
+.bi-desc{font-size:11px;color:rgba(210,200,235,0.85);line-height:1.45;margin-bottom:4px;}
+.bi-mat-row{display:flex;align-items:baseline;gap:4px;}
+.bi-mat-label{font-size:9px;font-weight:700;color:rgba(200,180,230,0.7);flex-shrink:0;}
+.bi-mat{font-size:11px;font-weight:600;color:rgba(230,210,255,0.9);}
+.bi-footer{margin-bottom:6px;padding-bottom:8px;border-bottom:1.5px dashed rgba(255,255,255,0.15);font-size:10px;color:rgba(210,200,235,0.8);line-height:1.6;}
+
+/* ── Work area (panels + toolbar) ── */
+.work-area{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;}
+
+/* ── Panels ── */
+.panels{flex:1;display:flex;gap:8px;overflow:hidden;min-height:0;}
+.panel{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;background:rgba(30,25,55,0.7);border-radius:16px;box-shadow:0 2px 16px rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.08);overflow:hidden;backdrop-filter:blur(8px);}
+.panel-top{display:flex;align-items:center;justify-content:center;gap:6px;padding:4px 10px;flex-shrink:0;flex-wrap:wrap;background:rgba(255,255,255,0.03);border-bottom:1px solid rgba(255,255,255,0.06);}
+.panel-label{font-size:11px;font-weight:700;color:rgba(200,190,230,0.8);letter-spacing:0.5px;}
+
+/* ── Box ── */
+.box-wrap{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:4px;}
+.box{position:relative;background:linear-gradient(180deg,#faf7f2 0%,#f2ece4 80%,#e8dfd4 100%);border:3px solid rgba(255,255,255,0.15);border-radius:10px;overflow:hidden;cursor:crosshair;box-shadow:0 0 20px rgba(0,0,0,0.3);}
+.box-label-top,.box-label-bottom{position:absolute;left:0;right:0;text-align:center;font-size:9px;font-weight:700;letter-spacing:1px;pointer-events:none;z-index:6;opacity:0.35;}
+.box-label-top{top:3px;color:#8a7a6a;}
+.box-label-bottom{bottom:3px;color:#8a7a6a;}
+.draw-canvas{position:absolute;inset:0;z-index:5;}
+.intro-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#c4b5a6;font-size:12px;text-align:center;pointer-events:none;line-height:2;z-index:1;font-weight:600;}
+
+/* ── Hanji ── */
+.hanji-wrap{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:6px;}
+.hanji-screen{position:relative;background:linear-gradient(135deg,#ece4d4,#e0d8c8);border:3px solid rgba(255,255,255,0.12);border-radius:10px;overflow:hidden;box-shadow:0 0 20px rgba(0,0,0,0.3);}
+.hanji-screen::before{content:'';position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 30 Q15 27 30 30 Q45 33 60 30' stroke='%23ccc4a8' fill='none' stroke-width='0.5' opacity='0.35'/%3E%3Cpath d='M30 0 Q27 15 30 30 Q33 45 30 60' stroke='%23ccc4a8' fill='none' stroke-width='0.5' opacity='0.25'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:4;}
+
+/* ── Spotlight ── */
+.spot{position:absolute;pointer-events:none;z-index:2;}
+.spot-glow{position:absolute;border-radius:50%;pointer-events:none;}
+.spot-handle{position:absolute;width:24px;height:24px;border-radius:50%;border:2px dashed rgba(255,255,255,0.3);cursor:grab;pointer-events:auto;z-index:15;transform:translate(-50%,-50%);background:rgba(255,255,255,0.1);transition:all 0.15s;}
+.spot-handle:active{cursor:grabbing;}
+.spot.selected .spot-handle{border-color:rgba(255,255,255,0.9);background:rgba(255,255,255,0.3);box-shadow:0 0 12px rgba(255,255,255,0.4);transform:translate(-50%,-50%) scale(1.15);}
+
+.hanji-draw-canvas{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0.55;}
+.hanji-vignette{position:absolute;inset:0;z-index:6;pointer-events:none;
+  background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,0.08) 100%);}
+
+/* ── Spot & blur controls ── */
+.spot-controls{display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:center;}
+.spot-btn{padding:4px 12px;border:none;border-radius:14px;font-size:10px;font-weight:700;cursor:pointer;background:rgba(160,130,210,0.4);color:#e0d0ff;border:1px solid rgba(160,130,210,0.3);transition:all 0.15s;}
+.spot-btn:active{transform:scale(0.95);}
+.spot-btn.del{background:rgba(210,130,130,0.35);color:#ffcaca;border-color:rgba(210,130,130,0.3);display:none;}
+.spot-btn.del.show{display:inline-block;}
+.spot-colors{display:flex;gap:4px;align-items:center;}
+.spot-cd{width:20px;height:20px;border-radius:50%;border:2.5px solid rgba(255,255,255,0.15);cursor:pointer;transition:all 0.15s;}
+.spot-cd.white-dot{border-color:rgba(255,255,255,0.25);}
+.spot-cd.active{border-color:#fff;transform:scale(1.2);box-shadow:0 0 8px rgba(255,255,255,0.3);}
+
+.ctrl-wrap{display:none;align-items:center;gap:4px;}
+.ctrl-wrap.show{display:flex;}
+.ctrl-label{font-size:9px;color:rgba(180,170,210,0.6);font-weight:700;white-space:nowrap;}
+.ctrl-slider{width:50px;height:6px;-webkit-appearance:none;appearance:none;background:rgba(255,255,255,0.12);border-radius:3px;outline:none;}
+.ctrl-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#a088cc;cursor:pointer;box-shadow:0 0 6px rgba(160,136,204,0.4);}
+.ctrl-slider.blur-s::-webkit-slider-thumb{background:#8090b0;}
+
+/* ── Blur bar ── */
+.blur-bar{display:flex;align-items:center;justify-content:center;gap:8px;padding:6px 20px;flex-shrink:0;background:rgba(255,255,255,0.03);border-top:1px solid rgba(255,255,255,0.06);}
+.blur-bar .ctrl-slider.blur-s{width:140px;}
+
+/* ── Toolbar ── */
+.draw-toolbar{flex-shrink:0;background:rgba(30,25,55,0.7);border-top:1px solid rgba(255,255,255,0.08);border-radius:0 0 16px 16px;padding:8px 12px;display:flex;align-items:center;justify-content:center;gap:8px;z-index:100;overflow-x:auto;-webkit-overflow-scrolling:touch;backdrop-filter:blur(8px);margin-top:6px;border:1px solid rgba(255,255,255,0.08);border-radius:14px;}
+.draw-toolbar::-webkit-scrollbar{display:none;}
+.tb-divider{width:1.5px;height:28px;background:rgba(255,255,255,0.1);flex-shrink:0;border-radius:1px;}
+
+/* ── Brush buttons (toolbar) ── */
+.brush-btn{display:flex;flex-direction:column;align-items:center;padding:8px 12px;border-radius:14px;border:2px solid transparent;background:rgba(255,255,255,0.07);cursor:pointer;flex-shrink:0;min-width:72px;transition:all 0.15s;}
+.brush-btn:active{transform:scale(0.95);}
+.brush-btn.active{border-color:rgba(180,150,230,0.5);background:rgba(120,90,180,0.4);}
+.brush-btn .bp{height:16px;width:36px;margin-bottom:4px;position:relative;display:flex;align-items:center;justify-content:center;}
+.brush-btn .blabel{font-size:11px;font-weight:700;white-space:nowrap;text-align:center;color:rgba(200,190,220,0.7);}
+.brush-btn.active .blabel{color:#e0d4ff;}
+
+/* Brush previews */
+.bp-pen::after{content:'';position:absolute;bottom:3px;width:26px;height:2.5px;background:rgba(200,190,220,0.5);border-radius:2px;}
+.brush-btn.active .bp-pen::after{background:rgba(224,212,255,0.7);}
+.bp-moru{background:radial-gradient(circle at 4px 8px,rgba(200,190,220,0.5) 1.5px,transparent 1.5px),radial-gradient(circle at 10px 8px,rgba(200,190,220,0.5) 1.5px,transparent 1.5px),radial-gradient(circle at 16px 8px,rgba(200,190,220,0.5) 1.5px,transparent 1.5px),radial-gradient(circle at 22px 8px,rgba(200,190,220,0.5) 1.5px,transparent 1.5px),radial-gradient(circle at 28px 8px,rgba(200,190,220,0.5) 1.5px,transparent 1.5px);}
+.brush-btn.active .bp-moru{filter:brightness(1.5);}
+.bp-soft{background:radial-gradient(ellipse at center,rgba(200,190,220,0.4) 15%,rgba(200,190,220,0.1) 40%,transparent 65%);border-radius:50%;}
+.brush-btn.active .bp-soft{filter:brightness(1.5);}
+.bp-mesh{background:
+  repeating-linear-gradient(55deg,rgba(200,190,220,0.4) 0px,rgba(200,190,220,0.4) 0.7px,transparent 0.7px,transparent 3.5px),
+  repeating-linear-gradient(-55deg,rgba(200,190,220,0.4) 0px,rgba(200,190,220,0.4) 0.7px,transparent 0.7px,transparent 3.5px);border-radius:2px;}
+.brush-btn.active .bp-mesh{filter:brightness(1.5);}
+.bp-flat::after{content:'';position:absolute;bottom:2px;width:24px;height:10px;background:rgba(200,190,220,0.4);border-radius:2px;}
+.brush-btn.active .bp-flat::after{background:rgba(224,212,255,0.5);}
+.bp-net{background:
+  repeating-linear-gradient(0deg,rgba(200,190,220,0.35) 0px,rgba(200,190,220,0.35) 0.5px,transparent 0.5px,transparent 2.5px),
+  repeating-linear-gradient(90deg,rgba(200,190,220,0.35) 0px,rgba(200,190,220,0.35) 0.5px,transparent 0.5px,transparent 2.5px);border-radius:2px;}
+.brush-btn.active .bp-net{filter:brightness(1.5);}
+
+/* ── Pen colors ── */
+.pen-colors{display:flex;gap:4px;flex-shrink:0;}
+.pc{width:26px;height:26px;border-radius:50%;border:2.5px solid rgba(255,255,255,0.12);cursor:pointer;transition:all 0.15s;}
+.pc.active{border-color:#d4b8ff;transform:scale(1.15);box-shadow:0 0 8px rgba(212,184,255,0.3);}
+.pc.wh{border-color:rgba(255,255,255,0.25);}
+
+/* ── Pen size ── */
+.pen-size{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.pen-dot{border-radius:50%;background:rgba(200,190,220,0.6);transition:all 0.1s;}
+.pen-slider{width:55px;height:6px;-webkit-appearance:none;appearance:none;background:rgba(255,255,255,0.12);border-radius:3px;outline:none;}
+.pen-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#a088cc;cursor:pointer;box-shadow:0 0 6px rgba(160,136,204,0.4);}
+
+/* ── Action buttons ── */
+.tool-btn{height:34px;padding:0 14px;border:none;border-radius:12px;background:rgba(255,255,255,0.07);font-size:11px;font-weight:700;cursor:pointer;color:rgba(200,190,220,0.7);flex-shrink:0;white-space:nowrap;transition:all 0.15s;border:1px solid rgba(255,255,255,0.08);}
+.tool-btn:active{transform:scale(0.95);}
+.tool-btn.active{background:rgba(120,90,180,0.4);color:#e0d4ff;border-color:rgba(180,150,230,0.3);}
+.tool-btn.danger{background:rgba(210,130,130,0.2);color:#ffbaba;border-color:rgba(210,130,130,0.2);}
+.tool-btn.undo{font-size:17px;padding:0 10px;}
+
+/* ── Responsive ── */
+@media(max-width:700px){
+  .brush-info{display:none;}
+  .main-area{padding:4px 6px;gap:6px;}
+  .panels{gap:6px;}
+  .panel{border-radius:12px;}
+  .panel-top{padding:4px 8px;}
+  .panel-label{font-size:10px;}
+  .header h1{font-size:13px;}
+  .brush-btn{min-width:50px;padding:4px 6px;}
+  .pc{width:22px;height:22px;}
+  .draw-toolbar{padding:6px 8px;gap:6px;}
+}
+@media(max-width:500px){
+  .panels{flex-direction:column;}
+}
+@media(min-width:1000px){
+  .brush-info{width:185px;padding:12px;}
+  .main-area{padding:10px 16px;gap:12px;}
+  .panels{gap:12px;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-center">
+    <h1>빛과 그림자 아이디어 스케치</h1>
+    <div class="header-desc">우리 사회의 빛과 그림자를 탐색하고, 다양한 재료로 표현해봅시다.</div>
+  </div>
+  <button class="btn-reset" id="btnReset">초기화</button>
+</div>
+
+<div class="main-area">
+  <!-- 왼쪽: 브러쉬 설명 -->
+  <div class="brush-info" id="brushInfo">
+    <div class="brush-info-title">브러쉬 안내</div>
+    <div class="bi-footer">다양한 재료의 질감을 미리 테스트해보고, 작품에 어떤 재료가 필요한지 계획을 세워보세요! 아래는 각 브러쉬에 대한 설명입니다.</div>
+    <!-- items inserted by JS -->
+  </div>
+
+  <!-- 오른쪽: 작업 영역 -->
+  <div class="work-area">
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-top"><span class="panel-label">박스 안 (정면)</span></div>
+        <div class="box-wrap">
+          <div class="box" id="box">
+            <div class="box-label-top">천장</div>
+            <div class="box-label-bottom">바닥</div>
+            <canvas class="draw-canvas" id="drawCanvas"></canvas>
+            <div class="intro-hint" id="introHint">여기에 자유롭게<br>그려보세요</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-top">
+          <span class="panel-label">한지 화면</span>
+          <div class="spot-controls">
+            <div class="spot-colors" id="spotColors"></div>
+            <button class="spot-btn" id="btnAddSpot">+ 조명</button>
+            <button class="spot-btn del" id="btnDelSpot">삭제</button>
+            <div class="ctrl-wrap" id="spotSizeWrap">
+              <span class="ctrl-label">크기</span>
+              <input type="range" class="ctrl-slider" id="spotSizeSlider" min="20" max="400" value="85">
+            </div>
+          </div>
+        </div>
+        <div class="hanji-wrap">
+          <div class="hanji-screen" id="hanjiScreen">
+            <canvas class="hanji-draw-canvas" id="hanjiDrawCanvas"></canvas>
+            <div class="hanji-vignette"></div>
+          </div>
+        </div>
+        <div class="blur-bar">
+          <span class="ctrl-label">그림자 번짐</span>
+          <input type="range" class="ctrl-slider blur-s" id="blurSlider" min="0" max="4" value="2" step="1">
+        </div>
+      </div>
+    </div>
+    <div class="draw-toolbar">
+      <div id="brushBtns" style="display:flex;gap:5px;"></div>
+      <div class="tb-divider"></div>
+      <div class="pen-colors" id="penColors"></div>
+      <div class="tb-divider"></div>
+      <div class="pen-size">
+        <div class="pen-dot" id="penPreview"></div>
+        <input type="range" class="pen-slider" id="penSlider" min="1" max="28" value="5">
+      </div>
+      <div class="tb-divider"></div>
+      <button class="tool-btn" id="btnEraser">지우개</button>
+      <button class="tool-btn undo" id="btnUndo">&#8630;</button>
+      <button class="tool-btn danger" id="btnClear">전체 지우기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// Brushes
+// ═══════════════════════════════════════
+const BRUSHES = [
+  {id:'pen', name:'기본 브러쉬', emoji:'✏️', previewClass:'bp-pen',
+   material:'철사 / 수수깡 등',
+   desc:'깔끔하고 또렷한 기본 선'},
+  {id:'moru', name:'부드러운 브러쉬', emoji:'🧶', previewClass:'bp-moru',
+   material:'털실 / 실 등',
+   desc:'윤곽이 살짝 번진 부드러운 느낌'},
+  {id:'soft', name:'몽실 브러쉬', emoji:'☁️', previewClass:'bp-soft',
+   material:'솜 / 탈지면 등',
+   desc:'몽실몽실 뭉게뭉게 퍼지는 느낌'},
+  {id:'spiky', name:'삐죽 브러쉬', emoji:'🌵', previewClass:'bp-mesh',
+   material:'모루 등',
+   desc:'삐죽삐죽 거칠게 퍼지는 느낌'},
+  {id:'flat', name:'넓은 브러쉬', emoji:'📄', previewClass:'bp-flat',
+   material:'종이 / 한지 등',
+   desc:'넓고 네모난 면으로 칠하는 느낌'},
+  {id:'net', name:'메쉬 브러쉬', emoji:'🕸️', previewClass:'bp-net',
+   material:'망사 / 거즈 등',
+   desc:'촘촘한 그물 패턴의 반투명 질감'},
+];
+
+const PEN_COLORS = ['#222','#666','#ff4444','#ff8888','#ff9800','#ffcc44','#44bb44','#88cc66','#4488ff','#88bbff','#9c27b0','#cc88dd','#8B5E3C','#c4a882','#fff'];
+
+const SPOT_COLORS = [
+  {name:'흰색 빛',  dot:'#f0f0f0', rgba:'255,255,255'},
+  {name:'따뜻한 빛', dot:'#ffe8a0', rgba:'255,235,180'},
+  {name:'빨간 빛',  dot:'#ff6666', rgba:'255,120,100'},
+  {name:'파란 빛',  dot:'#6699ff', rgba:'130,170,255'},
+  {name:'초록 빛',  dot:'#66dd88', rgba:'130,230,160'},
+  {name:'보라 빛',  dot:'#bb88ff', rgba:'190,140,255'},
+  {name:'주황 빛',  dot:'#ffaa44', rgba:'255,190,100'},
+];
+
+// ═══════════════════════════════════════
+// State
+// ═══════════════════════════════════════
+let currentBrush = 'pen';
+let penColor = '#222';
+let penSize = 5;
+let eraseMode = false;
+let isDrawing = false;
+let lastX = 0, lastY = 0;
+let boxW = 300, boxH = 200, hanjiW = 300, hanjiH = 200;
+let blurAmount = 2;
+let undoStack = [];
+const MAX_UNDO = 20;
+
+let spots = [];
+let spotNextId = 1;
+let selectedSpotId = null;
+let spotDragging = null;
+let currentSpotColorIdx = 0;
+
+const box = document.getElementById('box');
+const hanjiScreen = document.getElementById('hanjiScreen');
+const drawCanvas = document.getElementById('drawCanvas');
+const hanjiDrawCanvas = document.getElementById('hanjiDrawCanvas');
+const drawCtx = drawCanvas.getContext('2d');
+const hanjiCtx = hanjiDrawCanvas.getContext('2d');
+const introHint = document.getElementById('introHint');
+
+// ═══════════════════════════════════════
+// Init
+// ═══════════════════════════════════════
+function init() {
+  buildBrushInfo();
+  buildBrushBtns();
+  buildPenColors();
+  buildSpotColors();
+  resizeAll();
+  window.addEventListener('resize', resizeAll);
+
+  drawCanvas.addEventListener('pointerdown', onDrawStart);
+  drawCanvas.addEventListener('pointermove', onDrawMove);
+  drawCanvas.addEventListener('pointerup', onDrawEnd);
+  drawCanvas.addEventListener('pointerleave', onDrawEnd);
+
+  hanjiScreen.addEventListener('pointerdown', onHanjiDown);
+  document.addEventListener('pointermove', onHanjiMove);
+  document.addEventListener('pointerup', onHanjiUp);
+
+  document.getElementById('penSlider').addEventListener('input', e=>{penSize=+e.target.value;updatePenPreview();});
+  document.getElementById('btnEraser').addEventListener('click', toggleEraser);
+  document.getElementById('btnUndo').addEventListener('click', undo);
+  document.getElementById('btnClear').addEventListener('click', clearAll);
+  document.getElementById('btnReset').addEventListener('click', clearAll);
+  document.getElementById('btnAddSpot').addEventListener('click', addSpotlight);
+  document.getElementById('btnDelSpot').addEventListener('click', deleteSelectedSpot);
+  document.getElementById('spotSizeSlider').addEventListener('input', onSpotSizeChange);
+  document.getElementById('blurSlider').addEventListener('input', onBlurChange);
+
+  updatePenPreview();
+  applyBlur();
+  addSpotlight();
+}
+
+// ═══════════════════════════════════════
+// Build UI
+// ═══════════════════════════════════════
+function buildBrushInfo() {
+  const c = document.getElementById('brushInfo');
+  BRUSHES.forEach(b => {
+    const item = document.createElement('div');
+    item.className = 'bi-item';
+    item.innerHTML = `<div class="bi-name">${b.emoji} ${b.name}</div>`+
+      `<div class="bi-desc">${b.desc}</div>`+
+      `<div class="bi-mat-row"><span class="bi-mat-label">예시 재료</span><span class="bi-mat">${b.material}</span></div>`;
+    c.appendChild(item);
+  });
+}
+
+function buildBrushBtns() {
+  const c = document.getElementById('brushBtns');
+  BRUSHES.forEach((b,i) => {
+    const el = document.createElement('div');
+    el.className = 'brush-btn'+(i===0?' active':'');
+    el.dataset.id = b.id;
+    el.innerHTML = `<div class="bp ${b.previewClass}"></div><span class="blabel">${b.name}</span>`;
+    el.addEventListener('click', () => selectBrush(b.id));
+    c.appendChild(el);
+  });
+}
+
+function selectBrush(id) {
+  currentBrush = id;
+  eraseMode = false;
+  document.getElementById('btnEraser').classList.remove('active');
+  document.querySelectorAll('.brush-btn').forEach(x=>x.classList.toggle('active', x.dataset.id===id));
+}
+
+function buildPenColors() {
+  const c = document.getElementById('penColors');
+  PEN_COLORS.forEach((col,i) => {
+    const d = document.createElement('div');
+    d.className='pc'+(i===0?' active':'')+(col==='#fff'?' wh':'');
+    d.style.background=col;
+    d.addEventListener('click', () => {
+      penColor=col; eraseMode=false;
+      document.getElementById('btnEraser').classList.remove('active');
+      c.querySelectorAll('.pc').forEach(x=>x.classList.remove('active'));
+      d.classList.add('active');
+      updatePenPreview();
+    });
+    c.appendChild(d);
+  });
+}
+
+function buildSpotColors() {
+  const c = document.getElementById('spotColors');
+  SPOT_COLORS.forEach((sc,i) => {
+    const d = document.createElement('div');
+    d.className='spot-cd'+(i===0?' active':'')+(sc.dot==='#f0f0f0'?' white-dot':'');
+    d.style.background=sc.dot;
+    d.title=sc.name;
+    d.addEventListener('click', () => {
+      currentSpotColorIdx=i;
+      c.querySelectorAll('.spot-cd').forEach(x=>x.classList.remove('active'));
+      d.classList.add('active');
+      if(selectedSpotId!==null){
+        const s=spots.find(s=>s.id===selectedSpotId);
+        if(s){s.colorIdx=i; renderAllSpots();}
+      }
+    });
+    c.appendChild(d);
+  });
+}
+
+function updatePenPreview() {
+  const p=document.getElementById('penPreview');
+  const s=Math.max(4,Math.min(penSize,24));
+  p.style.width=s+'px'; p.style.height=s+'px';
+  p.style.background=eraseMode?'#e8ddd2':penColor;
+  p.style.border=(eraseMode||penColor==='#fff')?'1.5px solid #c4b5a6':'none';
+}
+
+function toggleEraser() {
+  eraseMode=!eraseMode;
+  document.getElementById('btnEraser').classList.toggle('active',eraseMode);
+  if(eraseMode) document.getElementById('penColors').querySelectorAll('.pc').forEach(d=>d.classList.remove('active'));
+  updatePenPreview();
+}
+
+// ═══════════════════════════════════════
+// Blur control
+// ═══════════════════════════════════════
+function onBlurChange(e) {
+  blurAmount = +e.target.value;
+  applyBlur();
+}
+
+function applyBlur() {
+  hanjiDrawCanvas.style.filter = `blur(${blurAmount}px)`;
+}
+
+// ═══════════════════════════════════════
+// Resize
+// ═══════════════════════════════════════
+function resizeAll() {
+  const fit32 = (wrap) => {
+    let w=wrap.clientWidth-10, h=w*2/3;
+    if(h>wrap.clientHeight-10){h=wrap.clientHeight-10; w=h*3/2;}
+    if(w>560){w=560; h=w*2/3;}
+    return [Math.floor(w), Math.floor(h)];
+  };
+  const tmp=document.createElement('canvas');
+  tmp.width=drawCanvas.width; tmp.height=drawCanvas.height;
+  tmp.getContext('2d').drawImage(drawCanvas,0,0);
+
+  [boxW,boxH]=fit32(box.parentElement);
+  box.style.width=boxW+'px'; box.style.height=boxH+'px';
+  drawCanvas.width=boxW; drawCanvas.height=boxH;
+  drawCtx.drawImage(tmp,0,0,tmp.width,tmp.height,0,0,boxW,boxH);
+
+  [hanjiW,hanjiH]=fit32(hanjiScreen.parentElement);
+  hanjiScreen.style.width=hanjiW+'px'; hanjiScreen.style.height=hanjiH+'px';
+  hanjiDrawCanvas.width=hanjiW; hanjiDrawCanvas.height=hanjiH;
+
+  renderAllSpots();
+  syncDrawToHanji();
+}
+
+// ═══════════════════════════════════════
+// Spotlight
+// ═══════════════════════════════════════
+function addSpotlight() {
+  const id=spotNextId++;
+  const ox=0.5+(Math.random()-0.5)*0.15;
+  const oy=0.45+(Math.random()-0.5)*0.15;
+  spots.push({id,x:ox,y:oy,colorIdx:currentSpotColorIdx,size:85});
+  renderAllSpots();
+  selectSpot(id);
+}
+
+function renderAllSpots() {
+  hanjiScreen.querySelectorAll('.spot').forEach(el=>el.remove());
+  spots.forEach(s => {
+    const sc=SPOT_COLORS[s.colorIdx];
+    const baseSize=Math.min(hanjiW,hanjiH);
+    const glowSize=baseSize*(s.size/100);
+
+    const el=document.createElement('div');
+    el.className='spot'+(s.id===selectedSpotId?' selected':'');
+    el.dataset.id=s.id;
+    el.style.cssText=`left:${s.x*hanjiW}px;top:${s.y*hanjiH}px;`;
+
+    const glow=document.createElement('div');
+    glow.className='spot-glow';
+    glow.style.cssText=`width:${glowSize}px;height:${glowSize}px;`+
+      `top:${-glowSize/2}px;left:${-glowSize/2}px;`+
+      `background:radial-gradient(ellipse at center,rgba(${sc.rgba},0.6) 0%,rgba(${sc.rgba},0.35) 25%,rgba(${sc.rgba},0.1) 50%,transparent 70%);`;
+    el.appendChild(glow);
+
+    const handle=document.createElement('div');
+    handle.className='spot-handle';
+    handle.dataset.id=s.id;
+    el.appendChild(handle);
+
+    hanjiScreen.insertBefore(el,hanjiDrawCanvas);
+  });
+}
+
+function selectSpot(id) {
+  selectedSpotId=id;
+  hanjiScreen.querySelectorAll('.spot').forEach(el=>el.classList.toggle('selected',+el.dataset.id===id));
+  document.getElementById('btnDelSpot').classList.toggle('show',id!==null);
+  document.getElementById('spotSizeWrap').classList.toggle('show',id!==null);
+  if(id!==null){
+    const s=spots.find(s=>s.id===id);
+    if(s){
+      currentSpotColorIdx=s.colorIdx;
+      document.getElementById('spotColors').querySelectorAll('.spot-cd').forEach((d,i)=>d.classList.toggle('active',i===s.colorIdx));
+      document.getElementById('spotSizeSlider').value=s.size;
+    }
+  }
+}
+
+function deselectSpot() {
+  selectedSpotId=null;
+  hanjiScreen.querySelectorAll('.spot').forEach(el=>el.classList.remove('selected'));
+  document.getElementById('btnDelSpot').classList.remove('show');
+  document.getElementById('spotSizeWrap').classList.remove('show');
+}
+
+function deleteSelectedSpot() {
+  if(selectedSpotId===null) return;
+  spots=spots.filter(s=>s.id!==selectedSpotId);
+  deselectSpot(); renderAllSpots();
+}
+
+function onSpotSizeChange(e) {
+  if(selectedSpotId===null) return;
+  const s=spots.find(s=>s.id===selectedSpotId);
+  if(s){s.size=+e.target.value; renderAllSpots();}
+}
+
+function onHanjiDown(e) {
+  const handle=e.target.closest('.spot-handle');
+  if(handle){e.preventDefault();selectSpot(+handle.dataset.id);spotDragging={id:+handle.dataset.id};handle.setPointerCapture(e.pointerId);}
+  else{deselectSpot();}
+}
+function onHanjiMove(e) {
+  if(!spotDragging)return; e.preventDefault();
+  const rect=hanjiScreen.getBoundingClientRect();
+  const s=spots.find(s=>s.id===spotDragging.id);if(!s)return;
+  s.x=Math.max(0,Math.min(1,(e.clientX-rect.left)/hanjiW));
+  s.y=Math.max(0,Math.min(1,(e.clientY-rect.top)/hanjiH));
+  const el=hanjiScreen.querySelector(`.spot[data-id="${s.id}"]`);
+  if(el) el.style.cssText=`left:${s.x*hanjiW}px;top:${s.y*hanjiH}px;`;
+}
+function onHanjiUp(){spotDragging=null;}
+
+// ═══════════════════════════════════════
+// Drawing
+// ═══════════════════════════════════════
+function onDrawStart(e) {
+  e.preventDefault(); isDrawing=true; introHint.style.display='none';
+  saveUndo();
+  const rect=drawCanvas.getBoundingClientRect();
+  lastX=e.clientX-rect.left; lastY=e.clientY-rect.top;
+  drawCtx.globalCompositeOperation=eraseMode?'destination-out':'source-over';
+  if(eraseMode){stampErase(lastX,lastY);}else{drawBrushAt(lastX,lastY);}
+  syncDrawToHanji();
+}
+function onDrawMove(e) {
+  if(!isDrawing)return; e.preventDefault();
+  const rect=drawCanvas.getBoundingClientRect();
+  const x=e.clientX-rect.left, y=e.clientY-rect.top;
+  if(eraseMode){interpolate(lastX,lastY,x,y,penSize*1.5,(px,py)=>stampErase(px,py));}
+  else{drawBrushSegment(lastX,lastY,x,y);}
+  lastX=x; lastY=y; syncDrawToHanji();
+}
+function onDrawEnd(){if(!isDrawing)return; isDrawing=false; drawCtx.globalCompositeOperation='source-over'; syncDrawToHanji();}
+
+function interpolate(x0,y0,x1,y1,sp,fn){
+  const dx=x1-x0,dy=y1-y0,dist=Math.sqrt(dx*dx+dy*dy);
+  const steps=Math.max(1,Math.floor(dist/Math.max(1,sp*0.4)));
+  for(let i=0;i<=steps;i++){const t=i/steps;fn(x0+dx*t,y0+dy*t);}
+}
+function stampErase(x,y){drawCtx.beginPath();drawCtx.arc(x,y,penSize*2,0,Math.PI*2);drawCtx.fill();}
+
+function drawBrushAt(x,y){({pen:penDot,moru:moruStamp,soft:softStamp,spiky:spikyStamp,flat:flatStamp,net:netStamp})[currentBrush](x,y);}
+function drawBrushSegment(x0,y0,x1,y1){({pen:penLine,moru:moruLine,soft:softLine,spiky:spikyLine,flat:flatLine,net:netLine})[currentBrush](x0,y0,x1,y1);}
+
+// ── 기본 브러쉬 ──
+function penDot(x,y){drawCtx.beginPath();drawCtx.arc(x,y,penSize/2,0,Math.PI*2);drawCtx.fillStyle=penColor;drawCtx.fill();}
+function penLine(x0,y0,x1,y1){
+  drawCtx.beginPath();drawCtx.moveTo(x0,y0);drawCtx.lineTo(x1,y1);
+  drawCtx.strokeStyle=penColor;drawCtx.lineWidth=penSize;
+  drawCtx.lineCap='round';drawCtx.lineJoin='round';drawCtx.stroke();
+}
+
+// ── 부드러운 브러쉬 (털실) ──
+function moruStamp(x,y){
+  // Soft blurred dot: layered circles
+  for(let i=3;i>=0;i--){
+    const r=penSize*(0.4+i*0.25);
+    drawCtx.beginPath();drawCtx.arc(x,y,r,0,Math.PI*2);
+    drawCtx.fillStyle=hexToRgba(penColor,0.08-i*0.01);drawCtx.fill();
+  }
+}
+function moruLine(x0,y0,x1,y1){
+  // Outer soft glow layer
+  drawCtx.beginPath();drawCtx.moveTo(x0,y0);drawCtx.lineTo(x1,y1);
+  drawCtx.strokeStyle=hexToRgba(penColor,0.08);
+  drawCtx.lineWidth=penSize*2.2;drawCtx.lineCap='round';drawCtx.stroke();
+  // Mid layer
+  drawCtx.beginPath();drawCtx.moveTo(x0,y0);drawCtx.lineTo(x1,y1);
+  drawCtx.strokeStyle=hexToRgba(penColor,0.12);
+  drawCtx.lineWidth=penSize*1.4;drawCtx.lineCap='round';drawCtx.stroke();
+  // Core line
+  drawCtx.beginPath();drawCtx.moveTo(x0,y0);drawCtx.lineTo(x1,y1);
+  drawCtx.strokeStyle=hexToRgba(penColor,0.35);
+  drawCtx.lineWidth=penSize*0.7;drawCtx.lineCap='round';drawCtx.stroke();
+}
+
+// ── 몽실 브러쉬 (솜) ──
+function softStamp(x,y){
+  // Use offscreen canvas to build one puff, then stamp with low globalAlpha
+  const r=penSize*1.8;
+  const buf=document.createElement('canvas');
+  const bs=Math.ceil(r*3);
+  buf.width=bs; buf.height=bs;
+  const bc=buf.getContext('2d');
+  const cx=bs/2, cy=bs/2;
+  for(let i=0;i<10;i++){
+    const a=Math.random()*Math.PI*2,d=Math.random()*r*0.4;
+    const s=r*(0.3+Math.random()*0.45);
+    bc.beginPath();bc.arc(cx+Math.cos(a)*d,cy+Math.sin(a)*d,s,0,Math.PI*2);
+    bc.fillStyle=penColor;bc.fill();
+  }
+  for(let i=0;i<5;i++){
+    const a=Math.random()*Math.PI*2,d=r*0.2+Math.random()*r*0.5;
+    const s=r*(0.3+Math.random()*0.35);
+    bc.beginPath();bc.arc(cx+Math.cos(a)*d,cy+Math.sin(a)*d,s,0,Math.PI*2);
+    bc.fillStyle=penColor;bc.fill();
+  }
+  drawCtx.save();
+  drawCtx.globalAlpha=0.08;
+  drawCtx.drawImage(buf,x-bs/2,y-bs/2);
+  drawCtx.restore();
+}
+function softLine(x0,y0,x1,y1){
+  const r=penSize*1.5;
+  const buf=document.createElement('canvas');
+  const bs=Math.ceil(r*3);
+  buf.width=bs; buf.height=bs;
+  const bc=buf.getContext('2d');
+  const cx=bs/2, cy=bs/2;
+  // Build one puff shape
+  for(let i=0;i<8;i++){
+    const a=Math.random()*Math.PI*2,d=Math.random()*r*0.4;
+    const s=r*(0.3+Math.random()*0.5);
+    bc.beginPath();bc.arc(cx+Math.cos(a)*d,cy+Math.sin(a)*d,s,0,Math.PI*2);
+    bc.fillStyle=penColor;bc.fill();
+  }
+  drawCtx.save();
+  drawCtx.globalAlpha=0.06;
+  interpolate(x0,y0,x1,y1,penSize*0.5,(px,py)=>{
+    drawCtx.drawImage(buf,px-bs/2,py-bs/2);
+  });
+  drawCtx.restore();
+}
+
+// ── 삐죽 브러쉬 (모루) ──
+function spikyStamp(x,y){
+  const r=penSize*1.0;
+  for(let i=0;i<8;i++){
+    const angle=(Math.PI/4)*i+Math.random()*0.5;
+    const len=r*(0.5+Math.random()*0.7);
+    drawCtx.beginPath();
+    drawCtx.moveTo(x-Math.cos(angle)*len,y-Math.sin(angle)*len);
+    drawCtx.lineTo(x+Math.cos(angle)*len,y+Math.sin(angle)*len);
+    drawCtx.strokeStyle=hexToRgba(penColor,0.2+Math.random()*0.15);
+    drawCtx.lineWidth=0.5+Math.random()*1;drawCtx.lineCap='round';drawCtx.stroke();
+  }
+}
+function spikyLine(x0,y0,x1,y1){
+  const spacing=penSize*0.3;
+  interpolate(x0,y0,x1,y1,spacing,(px,py)=>{
+    const threads=5+Math.floor(Math.random()*3);
+    for(let i=0;i<threads;i++){
+      const angle=(Math.PI/threads)*i+Math.random()*0.4;
+      const len=penSize*(0.4+Math.random()*0.7);
+      drawCtx.beginPath();
+      drawCtx.moveTo(px-Math.cos(angle)*len,py-Math.sin(angle)*len);
+      drawCtx.lineTo(px+Math.cos(angle)*len,py+Math.sin(angle)*len);
+      drawCtx.strokeStyle=hexToRgba(penColor,0.15+Math.random()*0.15);
+      drawCtx.lineWidth=0.4+Math.random()*0.9;drawCtx.lineCap='round';drawCtx.stroke();
+    }
+    if(Math.random()<0.4){
+      drawCtx.beginPath();drawCtx.arc(px,py,0.5+Math.random()*1.2,0,Math.PI*2);
+      drawCtx.fillStyle=hexToRgba(penColor,0.25);drawCtx.fill();
+    }
+  });
+}
+
+// ── 넓은 브러쉬 (종이/판지/스펀지) ──
+function flatStamp(x,y){
+  const w=penSize*2.5, h=penSize*1.2;
+  drawCtx.fillStyle=hexToRgba(penColor,0.2);
+  drawCtx.fillRect(x-w/2,y-h/2,w,h);
+  // Subtle edge variation
+  drawCtx.fillStyle=hexToRgba(penColor,0.06);
+  drawCtx.fillRect(x-w/2-1,y-h/2-1,w+2,h+2);
+}
+function flatLine(x0,y0,x1,y1){
+  const w=penSize*2.5, h=penSize*1.2;
+  const dx=x1-x0,dy=y1-y0,len=Math.sqrt(dx*dx+dy*dy);
+  if(len<0.5){flatStamp(x0,y0);return;}
+  const angle=Math.atan2(dy,dx);
+  // Soft outer layer
+  drawCtx.save();
+  drawCtx.translate((x0+x1)/2,(y0+y1)/2);
+  drawCtx.rotate(angle);
+  const totalLen=len+w;
+  drawCtx.fillStyle=hexToRgba(penColor,0.04);
+  drawCtx.fillRect(-totalLen/2,-h/2-2,totalLen,h+4);
+  drawCtx.fillStyle=hexToRgba(penColor,0.18);
+  drawCtx.fillRect(-totalLen/2,-h/2,totalLen,h);
+  drawCtx.restore();
+}
+
+// ── 메쉬 브러쉬 (망사/거즈) ──
+function netStamp(x,y){
+  const s=penSize*1.2;
+  const gap=Math.max(2.5, penSize*0.35);
+  // Draw a small grid patch centered at x,y
+  for(let gx=-s;gx<=s;gx+=gap){
+    drawCtx.beginPath();
+    drawCtx.moveTo(x+gx,y-s); drawCtx.lineTo(x+gx,y+s);
+    drawCtx.strokeStyle=hexToRgba(penColor,0.12+Math.random()*0.06);
+    drawCtx.lineWidth=0.4+Math.random()*0.3;drawCtx.stroke();
+  }
+  for(let gy=-s;gy<=s;gy+=gap){
+    drawCtx.beginPath();
+    drawCtx.moveTo(x-s,y+gy); drawCtx.lineTo(x+s,y+gy);
+    drawCtx.strokeStyle=hexToRgba(penColor,0.12+Math.random()*0.06);
+    drawCtx.lineWidth=0.4+Math.random()*0.3;drawCtx.stroke();
+  }
+}
+function netLine(x0,y0,x1,y1){
+  const spacing=penSize*0.6;
+  const gap=Math.max(2.5, penSize*0.35);
+  const r=penSize*0.9;
+  interpolate(x0,y0,x1,y1,spacing,(px,py)=>{
+    // Horizontal threads
+    for(let gy=-r;gy<=r;gy+=gap){
+      const len=r*(0.6+Math.random()*0.4);
+      drawCtx.beginPath();
+      drawCtx.moveTo(px-len,py+gy); drawCtx.lineTo(px+len,py+gy);
+      drawCtx.strokeStyle=hexToRgba(penColor,0.1+Math.random()*0.06);
+      drawCtx.lineWidth=0.3+Math.random()*0.3;drawCtx.stroke();
+    }
+    // Vertical threads
+    for(let gx=-r;gx<=r;gx+=gap){
+      const len=r*(0.6+Math.random()*0.4);
+      drawCtx.beginPath();
+      drawCtx.moveTo(px+gx,py-len); drawCtx.lineTo(px+gx,py+len);
+      drawCtx.strokeStyle=hexToRgba(penColor,0.1+Math.random()*0.06);
+      drawCtx.lineWidth=0.3+Math.random()*0.3;drawCtx.stroke();
+    }
+  });
+}
+
+// ═══════════════════════════════════════
+// Hanji sync
+// ═══════════════════════════════════════
+function syncDrawToHanji(){
+  hanjiCtx.clearRect(0,0,hanjiW,hanjiH);
+  // Draw source scaled
+  hanjiCtx.drawImage(drawCanvas,0,0,boxW,boxH,0,0,hanjiW,hanjiH);
+  // Read pixels and convert to shadow: keep alpha (density), darken color
+  const imgData=hanjiCtx.getImageData(0,0,hanjiW,hanjiH);
+  const d=imgData.data;
+  for(let i=0;i<d.length;i+=4){
+    if(d[i+3]>0){
+      // Replace color with dark shadow, preserve alpha for density
+      d[i]=25; d[i+1]=18; d[i+2]=10;
+      // Scale alpha: original alpha maps to shadow darkness
+      d[i+3]=Math.min(255, Math.round(d[i+3]*0.9));
+    }
+  }
+  hanjiCtx.putImageData(imgData,0,0);
+}
+
+// ═══════════════════════════════════════
+// Undo / Clear
+// ═══════════════════════════════════════
+function saveUndo(){if(undoStack.length>=MAX_UNDO)undoStack.shift();undoStack.push(drawCtx.getImageData(0,0,boxW,boxH));}
+function undo(){if(!undoStack.length)return;drawCtx.putImageData(undoStack.pop(),0,0);syncDrawToHanji();}
+function clearAll(){
+  if(!hasDrawing()&&!spots.length)return;
+  if(!confirm('모두 초기화할까요?'))return;
+  saveUndo();drawCtx.clearRect(0,0,boxW,boxH);hanjiCtx.clearRect(0,0,hanjiW,hanjiH);
+  spots=[];deselectSpot();renderAllSpots();introHint.style.display='';addSpotlight();
+}
+function hasDrawing(){
+  const d=drawCtx.getImageData(0,0,drawCanvas.width,drawCanvas.height).data;
+  for(let i=3;i<d.length;i+=80){if(d[i]>0)return true;}return false;
+}
+
+// ═══════════════════════════════════════
+// Util
+// ═══════════════════════════════════════
+function hexToRgba(hex,alpha){
+  if(hex.startsWith('rgb')){const m=hex.match(/[\d.]+/g);if(m&&m.length>=3)return`rgba(${m[0]},${m[1]},${m[2]},${alpha})`;}
+  hex=hex.replace('#','');
+  if(hex.length===3)hex=hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+  return`rgba(${parseInt(hex.substr(0,2),16)},${parseInt(hex.substr(2,2),16)},${parseInt(hex.substr(4,2),16)},${alpha})`;
+}
+
+init();
+</script>
+</body>
+</html>
