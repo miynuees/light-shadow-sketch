@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body{height:100%;overflow:hidden;touch-action:none;font-family:'Noto Sans KR','Segoe UI',sans-serif;}
+html,body{height:100%;overflow:hidden;touch-action:manipulation;font-family:'Noto Sans KR','Segoe UI',sans-serif;}
 body{background:#1a1a2e;display:flex;flex-direction:column;}
 
 /* ── Header ── */
@@ -63,7 +63,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
 /* ── Box ── */
 .box-wrap{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:4px;}
-.box{position:relative;background:linear-gradient(180deg,#faf7f2 0%,#f2ece4 80%,#e8dfd4 100%);border:3px solid rgba(255,255,255,0.15);border-radius:10px;overflow:hidden;cursor:crosshair;box-shadow:0 0 20px rgba(0,0,0,0.3);}
+.box{position:relative;background:linear-gradient(180deg,#faf7f2 0%,#f2ece4 80%,#e8dfd4 100%);border:3px solid rgba(255,255,255,0.15);border-radius:10px;overflow:hidden;cursor:crosshair;box-shadow:0 0 20px rgba(0,0,0,0.3);touch-action:none;}
 .box-label-top,.box-label-bottom{position:absolute;left:0;right:0;text-align:center;font-size:9px;font-weight:700;letter-spacing:1px;pointer-events:none;z-index:6;opacity:0.35;}
 .box-label-top{top:3px;color:#8a7a6a;}
 .box-label-bottom{bottom:3px;color:#8a7a6a;}
@@ -72,7 +72,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
 /* ── Hanji ── */
 .hanji-wrap{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:6px;}
-.hanji-screen{position:relative;background:linear-gradient(135deg,#ece4d4,#e0d8c8);border:3px solid rgba(255,255,255,0.12);border-radius:10px;overflow:hidden;box-shadow:0 0 20px rgba(0,0,0,0.3);}
+.hanji-screen{position:relative;background:linear-gradient(135deg,#ece4d4,#e0d8c8);border:3px solid rgba(255,255,255,0.12);border-radius:10px;overflow:hidden;box-shadow:0 0 20px rgba(0,0,0,0.3);touch-action:none;}
 .hanji-screen::before{content:'';position:absolute;inset:0;
   background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 30 Q15 27 30 30 Q45 33 60 30' stroke='%23ccc4a8' fill='none' stroke-width='0.5' opacity='0.35'/%3E%3Cpath d='M30 0 Q27 15 30 30 Q33 45 30 60' stroke='%23ccc4a8' fill='none' stroke-width='0.5' opacity='0.25'/%3E%3C/svg%3E");
   pointer-events:none;z-index:4;}
@@ -111,7 +111,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .blur-bar .ctrl-slider.blur-s{width:140px;}
 
 /* ── Toolbar ── */
-.draw-toolbar{flex-shrink:0;background:rgba(30,25,55,0.7);border-top:1px solid rgba(255,255,255,0.08);border-radius:0 0 16px 16px;padding:8px 12px;display:flex;align-items:center;justify-content:center;gap:8px;z-index:100;overflow-x:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x;backdrop-filter:blur(8px);margin-top:6px;border:1px solid rgba(255,255,255,0.08);border-radius:14px;}
+.draw-toolbar{flex-shrink:0;background:rgba(30,25,55,0.7);border-top:1px solid rgba(255,255,255,0.08);border-radius:0 0 16px 16px;padding:8px 12px;display:flex;align-items:center;gap:8px;z-index:100;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;touch-action:pan-x;backdrop-filter:blur(8px);margin-top:6px;border:1px solid rgba(255,255,255,0.08);border-radius:14px;}
 .draw-toolbar::-webkit-scrollbar{display:none;}
 .tb-divider{width:1.5px;height:28px;background:rgba(255,255,255,0.1);flex-shrink:0;border-radius:1px;}
 
@@ -909,6 +909,33 @@ function hexToRgba(hex,alpha){
   if(hex.length===3)hex=hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
   return`rgba(${parseInt(hex.substr(0,2),16)},${parseInt(hex.substr(2,2),16)},${parseInt(hex.substr(4,2),16)},${alpha})`;
 }
+
+// ═══════════════════════════════════════
+// Toolbar touch-scroll (Android fix)
+// ═══════════════════════════════════════
+(function(){
+  const tb = document.querySelector('.draw-toolbar');
+  let startX, scrollLeft, isDragging = false;
+  tb.addEventListener('touchstart', function(e){
+    // only handle horizontal scroll if touch is on toolbar (not on interactive elements)
+    const tag = e.target.tagName;
+    if(tag === 'INPUT') return; // allow sliders
+    isDragging = true;
+    startX = e.touches[0].pageX;
+    scrollLeft = tb.scrollLeft;
+  }, {passive: true});
+  tb.addEventListener('touchmove', function(e){
+    if(!isDragging) return;
+    const dx = e.touches[0].pageX - startX;
+    // if horizontal movement is significant, scroll toolbar
+    if(Math.abs(dx) > 5){
+      e.preventDefault();
+      tb.scrollLeft = scrollLeft - dx;
+    }
+  }, {passive: false});
+  tb.addEventListener('touchend', function(){ isDragging = false; }, {passive: true});
+  tb.addEventListener('touchcancel', function(){ isDragging = false; }, {passive: true});
+})();
 
 init();
 </script>
